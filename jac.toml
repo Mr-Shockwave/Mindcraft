@@ -39,3 +39,7 @@ format = "jac format ."
 
 [dependencies]
 byllm = "~=0.6"
+
+[jacpack]
+name = 'Mindcraft'
+description = 'Jac IDE snapshot for Mindcraft'
