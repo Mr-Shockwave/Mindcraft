@@ -1,0 +1,19 @@
+---
+description: Core architecture, safety, and hackathon constraints for Mind Island
+alwaysApply: true
+---
+
+# Mind Island Constraints
+
+- Build the shipped product full-stack in Jac; do not introduce a Python or Node backend.
+- Keep Jac central through nodes, typed edges, walkers, traversal, `by llm()`, and client JSX.
+- Preserve a deterministic fallback for every AI-dependent demo path.
+- Accept model-selected IDs only after allowlist and transformation-pair validation.
+- Optimize for the student-before-a-presentation golden path and a four-minute demo.
+- Model progress as externalized, acknowledged, and integrated—not health, damage, or positivity.
+- Give users interaction choice; AI suggestions are optional and non-diagnostic.
+- Never add combat, streak punishment, emotional rankings, or clinical efficacy claims.
+- Intercept crisis language before AI calls and persistence; redirect to immediate human support.
+- Keep `main.jac` and `jac.toml` at the root for JacHammer deployment.
+- Never commit API keys, `.env`, `.jac/`, generated builds, or raw emotional text.
+- Follow `docs/PSYCHOLOGICAL_FOUNDATION.md` and `docs/TWO_PERSON_WORKFLOW.md`.

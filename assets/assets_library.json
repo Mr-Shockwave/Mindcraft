@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "policy": {
+    "generation_allowed": false,
+    "unknown_asset_fallback": "sparkle",
+    "notes": "The LLM may select IDs but may never invent or generate visual assets."
+  },
+  "entities": [
+    {
+      "id": "dark_cloud",
+      "symbol": "☁️",
+      "themes": ["anxiety", "uncertainty"],
+      "transforms_to": "rain_garden"
+    },
+    {
+      "id": "tangled_knot",
+      "symbol": "🪢",
+      "themes": ["overwhelm", "anxiety"],
+      "transforms_to": "open_ribbon"
+    },
+    {
+      "id": "heavy_stone",
+      "symbol": "🪨",
+      "themes": ["sadness", "overwhelm"],
+      "transforms_to": "mossy_stone"
+    },
+    {
+      "id": "windy_leaves",
+      "symbol": "🍂",
+      "themes": ["frustration", "uncertainty"],
+      "transforms_to": "gentle_breeze"
+    },
+    {
+      "id": "fog_patch",
+      "symbol": "🌫️",
+      "themes": ["uncertainty", "overwhelm"],
+      "transforms_to": "lantern_path"
+    }
+  ],
+  "transformed_entities": [
+    {"id": "rain_garden", "symbol": "🌈"},
+    {"id": "open_ribbon", "symbol": "🎗️"},
+    {"id": "mossy_stone", "symbol": "🌱"},
+    {"id": "gentle_breeze", "symbol": "🍃"},
+    {"id": "lantern_path", "symbol": "🏮"}
+  ],
+  "tools": [
+    {"id": "breathe", "symbol": "🫧", "act_process": "present-moment awareness"},
+    {"id": "sunlight", "symbol": "☀️", "act_process": "acceptance"},
+    {"id": "water", "symbol": "💧", "act_process": "willingness"},
+    {"id": "name_it", "symbol": "🏷️", "act_process": "cognitive defusion"}
+  ]
+}

@@ -1,0 +1,41 @@
+[project]
+name = "mind-island"
+version = "0.1.0"
+description = "A three-minute ACT-inspired emotional externalization experience"
+entry-point = "main.jac"
+kind = "web-app"
+
+[dependencies.npm]
+react = "^18.2.0"
+react-dom = "^18.2.0"
+
+[dependencies.npm.dev]
+vite = "^6.4.1"
+"@vitejs/plugin-react" = "^4.2.1"
+typescript = "^5.3.3"
+"@types/react" = "^18.2.0"
+"@types/react-dom" = "^18.2.0"
+
+[dev-dependencies]
+watchdog = ">=3.0.0"
+
+[serve]
+base_route_app = "app"
+
+[client]
+
+[byllm.model]
+default_model = "openai/gpt-4.1-mini"
+
+[test]
+directory = "tests"
+verbose = true
+
+[scripts]
+dev = "jac start --dev"
+test = "jac test -d tests -v"
+check = "jac check main.jac"
+format = "jac format ."
+
+[dependencies]
+byllm = "~=0.6"
