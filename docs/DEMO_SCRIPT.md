@@ -28,7 +28,7 @@ Follow `docs/JAC_EVIDENCE.md`:
 
 - Social impact: low-barrier emotional externalization for high-pressure students.
 - Boundary: not therapy; crisis redirects to human support.
-- Close line: *“Mind Island helps a student take the next valued step without first defeating how they feel.”*
+- Close line: *“Mindcraft helps a student take the next valued step without first defeating how they feel.”*
 
 ## Backup if LLM is slow
 

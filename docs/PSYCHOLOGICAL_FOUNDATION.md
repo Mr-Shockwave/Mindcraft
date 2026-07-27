@@ -1,8 +1,8 @@
-# Mind Island Psychological Foundation
+# Mindcraft Psychological Foundation
 
 ## Purpose and scope
 
-Mind Island is a brief, non-clinical emotional reflection experience for a university student facing an immediate high-pressure moment, such as giving a presentation. It is intended to help the user notice and describe an experience, create psychological distance from it, and choose one small values-guided action.
+Mindcraft is a brief, non-clinical emotional reflection experience for a university student facing an immediate high-pressure moment, such as giving a presentation. It is intended to help the user notice and describe an experience, create psychological distance from it, and choose one small values-guided action.
 
 It is not therapy, diagnosis, crisis support, medical treatment, or a substitute for a qualified professional. The product must never claim that it heals anxiety, improves a disorder, or produces a clinically meaningful outcome.
 
@@ -22,7 +22,7 @@ An entity's visual transformation means “my relationship to this experience sh
 
 ## Acceptance and Commitment Therapy model
 
-Mind Island draws design inspiration from the six processes commonly described in ACT. It does not attempt to deliver an ACT treatment protocol.
+Mindcraft draws design inspiration from the six processes commonly described in ACT. It does not attempt to deliver an ACT treatment protocol.
 
 ### Present-moment awareness
 
@@ -143,7 +143,7 @@ The backend validates every asset ID and transformation pair. A deterministic pa
 
 ## Safety behavior
 
-Mind Island should intercept clear crisis phrases before calling the LLM or creating a graph node. The current MVP displays an immediate limitation statement and U.S./Canada 988 information.
+Mindcraft should intercept clear crisis phrases before calling the LLM or creating a graph node. The current MVP displays an immediate limitation statement and U.S./Canada 988 information.
 
 Before public release:
 

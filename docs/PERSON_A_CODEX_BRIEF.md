@@ -1,4 +1,4 @@
-# Person A · Codex Visual Brief (Mind Island)
+# Person A · Codex Visual Brief (Mindcraft)
 
 **Audience:** Person A + Codex / Lovable / visual tools  
 **Goal:** Make the product look demo-ready without touching Jac core logic.  
@@ -91,7 +91,7 @@ Tools: `breathe`, `sunlight`, `water`, `name_it`
 ## Codex prompt
 
 ```text
-You are Person A’s visual agent for Mind Island (Jac full-stack).
+You are Person A’s visual agent for Mindcraft (Jac full-stack).
 
 ONLY edit components/**, styles.css, and assets/**.
 NEVER edit main.jac walkers/nodes, tests/, or jac.toml AI config.

@@ -4,7 +4,7 @@ Use this during the 4-minute demo when judges ask “where is Jac?” Open these
 
 ## One-sentence answer
 
-Mind Island is a full-stack Jac app: the graph, walkers, typed `by llm()`, validation, REST endpoints, and client JSX all compile from Jac. Without Jac, the golden path does not exist.
+Mindcraft is a full-stack Jac app: the graph, walkers, typed `by llm()`, validation, REST endpoints, and client JSX all compile from Jac. Without Jac, the golden path does not exist.
 
 ## Show these files in order (about 60–75 seconds)
 

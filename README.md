@@ -1,6 +1,6 @@
-# Mind Island
+# Mindcraft
 
-Mind Island is a three-minute, ACT-inspired emotional externalization experience for a university student facing an immediate stressful moment. A feeling becomes a gentle entity on a 2D island; the user chooses how to meet it and commits one small action that matters.
+Mindcraft is a three-minute, ACT-inspired emotional externalization experience for a university student facing an immediate stressful moment. A feeling becomes a gentle entity on a 2D island; the user chooses how to meet it and commits one small action that matters.
 
 The emotion is never attacked or scored. Visual transformation represents a change in relationship to the experience, not a cure.
 
