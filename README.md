@@ -58,11 +58,22 @@ Manual checks:
 - the flow still completes without the OpenAI key;
 - the deployed JacHammer sandbox link works in a private browser window.
 
+## Project layout (two-person merge safety)
+
+- `main.jac` — Person B: graph, walkers, `by llm()`, validation
+- `components/App.cl.jac` — Person A: full UI (may be rewritten substantially)
+- `styles.css` / `assets/**` — Person A
+- `tests/**` — Person B
+- `docs/MERGE_RULES.md` — how to work in parallel without unmergable conflicts
+- `docs/JAC_EVIDENCE.md` — where Jac runs (show judges in the IDE)
+- `docs/DEMO_SCRIPT.md` — four-minute live demo
+
 ## Important documents
 
 - `context.md`: original product context.
 - `docs/PSYCHOLOGICAL_FOUNDATION.md`: psychological logic, safety limits, and language rules.
-- `docs/TWO_PERSON_WORKFLOW.md`: device setup, ownership, Git integration, event schedule, and demo handoff.
+- `docs/TWO_PERSON_WORKFLOW.md`: collaboration and demo runbook.
+- `person_a_codex_brief.md`: Codex brief for Person A.
 - `assets/assets_library.json`: strict visual and interaction allowlist.
 
 ## Scope

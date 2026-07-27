@@ -16,65 +16,54 @@ Anything outside this path is optional.
 
 ## Roles
 
-### Person A — Product, demo, and JacHammer lead
+### Person A — Product, visual frontend, demo, and JacHammer lead
 
 Person A owns:
 
-- visual polish proposals and approved icons under `assets/` when needed;
-- UX copy review against the psychological language guide;
+- **all substantial frontend work** in `components/**` (especially `components/App.cl.jac`);
+- `styles.css` and visual assets under `assets/**` (IDs locked);
+- UX copy, layout, IslandSvg, motion, presentation framing;
 - browser testing on presentation and mobile widths;
 - Devpost description, screenshots, and demo video;
-- the four-minute live-demo script;
-- keeping the task board and calling scope cuts;
-- JacHammer deployment and public-link verification.
+- JacHammer deployment and public-link verification;
+- following `person_a_codex_brief.md` and `docs/MERGE_RULES.md`.
 
-Lovable may be used for visual exploration only. Production frontend, backend, AI, and graph logic stay in Jac.
+Lovable / Codex may rewrite the client UI freely **inside Person A files only**. Do not regenerate `main.jac`. Do not create a separate React production app.
 
-### Person B — Jac architecture, frontend wiring, safety, and test lead
+### Person B — Jac architecture, safety, tests, and integrator
 
 Person B owns:
 
-- `main.jac` server nodes, edges, walkers, helpers, and Jac client JSX;
-- `styles.css` integration needed for the golden path;
-- typed `by llm()` behavior and OpenAI configuration;
-- Codex frontend adaptations via backend contracts when they strengthen the demo;
-- strict asset, tool, and coordinate validation;
-- deterministic fallback behavior;
-- crisis-language interception;
-- Jac compiler, formatter, and test results;
-- graph traversal evidence for the judges;
-- integration fixes and final technical sign-off.
+- `main.jac` server-side nodes, edges, walkers, helpers, and the thin `cl` import of `app`;
+- typed `by llm()`, validation, fallback, crisis interception;
+- `tests/**`, `jac.toml` AI/config;
+- `docs/JAC_EVIDENCE.md` (judge “where Jac runs” — not a main UI panel);
+- merge integration and final technical sign-off.
+
+Person B avoids editing `components/**` and `styles.css` unless Person A requests an API-wiring fix.
 
 ## File ownership
 
-To minimize conflicts:
+See `docs/MERGE_RULES.md` for the hard rules. Summary:
 
-- Person A has primary write ownership of `docs/DEMO_SCRIPT.md`, screenshots, Devpost text, and final deployment notes.
-- Person B has primary write ownership of `jac.toml`, `main.jac`, `styles.css`, `tests/`, and safety logic.
-- `docs/PSYCHOLOGICAL_FOUNDATION.md` is changed only by agreement because it defines product constraints.
-- Person B announces any walker/response-shape changes before Person A records a demo.
+- Person A: `components/**`, `styles.css`, `assets/**`, screenshots, Devpost
+- Person B: `main.jac`, `tests/**`, `jac.toml`, Jac evidence docs
+- Shared by agreement: psychological foundation and workflow docs
 
-### Hard merge rules
-
-- Person A branches from the latest `main` and keeps `main.jac`, `styles.css`, `tests/`, and `jac.toml` unchanged unless Person B explicitly asks for a paired frontend integration edit.
-- Person A may propose visual changes in mockups, screenshots, or notes first; Person B ports approved changes into Jac client/CSS when the golden path is stable.
-- Person A may change visual symbols in `assets/assets_library.json` only when every `id`, `themes`, and `transforms_to` value stays unchanged.
-- Person A must not remove, rename, or bypass the golden-path buttons: `Place it on my island`, `Try this interaction`, `Plant this intention`, and `Reset demo`.
-- Person A must not change walker names, walker arguments, response keys, ACT stages, asset IDs, tool IDs, coordinate handling, crisis guards, fallback behavior, or tests.
-- If both people need an app-surface change, Person B edits `main.jac` and `styles.css` first on `person-b-jac-core`; Person A rebases afterward and validates the browser flow.
-- Before opening a Person A PR, run `git fetch origin main` and `git diff origin/main -- main.jac styles.css tests jac.toml`. The expected result is empty unless the PR description names the Person B-approved exception.
-- Integration order is Person A demo/docs assets first, Person B Jac-core changes second, then one complete golden-path browser run.
+**Why this works:** frontend and backend no longer share one editable region of `main.jac`. Person A can make large UI changes without colliding with Person B walker edits.
 
 ## Interface contract between frontend and backend
 
-Person B / Jac UI can rely on these walkers:
+Person A / Jac UI can rely on these walkers:
 
 - `get_world()` returns `entities` and `tools`;
-- `manifest_emotion(feeling_text)` returns `pending` tray entities, suggested tools, and world;
+- `manifest_emotion(feeling_text)` returns `pending` tray entities (3 choices), suggested tools, and world;
 - `place_entity(entity_id, x, y)` places one tray entity onto the island;
-- `apply_interaction(entity_id, tool_id)` requires a placed entity and returns the transformed entity and world;
-- `commit_value_action(entity_id, action_text)` requires a transformed entity and returns the updated world;
+- `apply_interaction(entity_id, tool_id)` requires a placed entity; one successful tool click acknowledges + transforms;
+- `commit_value_action(entity_id, action_text)` requires a transformed entity;
 - `reset_demo()` clears the anonymous session graph.
+
+Unplaced tray siblings remain in the world after one entity is placed (do not auto-delete).
 
 Every mutation returns:
 
@@ -82,7 +71,7 @@ Every mutation returns:
 - `error: str` when unsuccessful;
 - `world: list` when successful for non-reset mutations.
 
-Entity views include `placed`, `x`, and `y` so the island canvas can render Codex placement without inventing coordinates client-side.
+Entity views include `placed`, `x`, and `y`.
 
 ## Git setup on two devices
 
