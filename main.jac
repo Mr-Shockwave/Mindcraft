@@ -442,6 +442,7 @@ walker:pub reset_demo {
     }
 }
 
+# Client entry lives in components/App.cl.jac (Person A).
 cl {
     import "./styles.css";
 

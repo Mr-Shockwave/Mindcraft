@@ -7,6 +7,8 @@ alwaysApply: true
 
 - Build the shipped product full-stack in Jac; do not introduce a Python or Node backend.
 - Keep Jac central through nodes, typed edges, walkers, traversal, `by llm()`, and client JSX.
+- Person B owns `main.jac` / `tests/`; Person A owns `components/**` / `styles.css` / `assets/**`.
+- Do not put large UI rewrites back into `main.jac` — use `components/App.cl.jac`.
 - Preserve a deterministic fallback for every AI-dependent demo path.
 - Accept model-selected IDs only after allowlist and transformation-pair validation.
 - Optimize for the student-before-a-presentation golden path and a four-minute demo.
@@ -16,4 +18,4 @@ alwaysApply: true
 - Intercept crisis language before AI calls and persistence; redirect to immediate human support.
 - Keep `main.jac` and `jac.toml` at the root for JacHammer deployment.
 - Never commit API keys, `.env`, `.jac/`, generated builds, or raw emotional text.
-- Follow `docs/PSYCHOLOGICAL_FOUNDATION.md` and `docs/TWO_PERSON_WORKFLOW.md`.
+- Follow `docs/PSYCHOLOGICAL_FOUNDATION.md`, `docs/MERGE_RULES.md`, and `docs/TWO_PERSON_WORKFLOW.md`.
