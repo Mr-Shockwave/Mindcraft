@@ -264,7 +264,7 @@ Person A, approximately 3:20–4:00:
 
 - return to the transformed island;
 - state the social impact and non-clinical boundary;
-- close with: “Mind Island helps a student take the next valued step without first having to defeat how they feel.”
+- close with: “Mindcraft helps a student take the next valued step without first having to defeat how they feel.”
 
 ## Scope-cut order
 

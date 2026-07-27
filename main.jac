@@ -273,7 +273,7 @@ walker:pub manifest_emotion {
             report {
                 "ok": False,
                 "crisis": True,
-                "error": "Mind Island is not crisis support. If you may act on these thoughts, call emergency services now. In the U.S. or Canada, call or text 988."
+                "error": "Mindcraft is not crisis support. If you may act on these thoughts, call emergency services now. In the U.S. or Canada, call or text 988."
             };
             return;
         }
@@ -525,7 +525,7 @@ cl {
                 event_entity = selected_entity;
                 event_text = feeling_text.strip();
                 if not event_text {
-                    event_text = "你好";
+                    event_text = "Hello";
                 }
                 feeling_text = "";
                 return;
@@ -635,7 +635,7 @@ cl {
                 planted_entity = "";
                 event_entity = "";
                 event_text = "";
-                notice = "Island cleared. Ready for a fresh check-in.";
+                notice = "Mindcraft is cleared. Ready for a fresh check-in.";
             } else {
                 error = "Could not reset the island.";
             }
@@ -654,7 +654,7 @@ cl {
             <header className="top-bar">
                 <div className="brand">
                     <span className="brand-mark">MI</span>
-                    <span>Mind Island</span>
+                    <span>Mindcraft</span>
                 </div>
             </header>
 
@@ -710,8 +710,8 @@ cl {
                         }}
                         aria-label="Generation target"
                     >
-                        <option value="world">生成世界</option>
-                        <option value="object">生成物体</option>
+                        <option value="world">Generate World</option>
+                        <option value="object">Generate Object</option>
                     </select>
                     <select
                         value={world_style}
@@ -722,9 +722,9 @@ cl {
                         }}
                         aria-label="World style"
                     >
-                        <option value="cloud">云海世界</option>
-                        <option value="glass">玻璃花园</option>
-                        <option value="night">夜光湖面</option>
+                        <option value="cloud">Cloud World</option>
+                        <option value="glass">Glass Garden</option>
+                        <option value="night">Night Lake</option>
                     </select>
                 </div>
 
@@ -757,10 +757,10 @@ cl {
                 {selected_entity and
                     <div className="object-editor">
                         <button className="implant-button" onClick={lambda -> None { plant_selected(); }} disabled={busy}>
-                            植入世界
+                            Plant in World
                         </button>
                         <label>
-                            <span>大小</span>
+                            <span>Size</span>
                             <input
                                 type="range"
                                 min="0.55"
@@ -771,7 +771,7 @@ cl {
                             />
                         </label>
                         <label>
-                            <span>角度</span>
+                            <span>Angle</span>
                             <input
                                 type="range"
                                 min="-180"
@@ -796,10 +796,10 @@ cl {
                         onChange={lambda (e: any) { feeling_text = str(e.target.value); }}
                         maxLength={280}
                         aria-label="Describe what you are feeling"
-                        placeholder={("定义事件：让选中的物体发生什么？例如：产生对话框并说“你好”" if selected_entity else ("描述想生成的世界..." if generation_target == "world" else "描述情绪或想法，AI 生成不同物体选项..."))}
+                        placeholder={("Define an event: what should the selected object do? Example: create a speech bubble that says \"Hello\"." if selected_entity else ("Describe the world you want to generate..." if generation_target == "world" else "Describe a feeling or thought, and AI will generate object options..."))}
                     />
                     <button className="send-button" onClick={lambda -> None { send_prompt(); }} disabled={busy}>
-                        {("..." if busy else ("定义事件" if selected_entity else "Send"))}
+                        {("..." if busy else ("Define Event" if selected_entity else "Send"))}
                     </button>
                 </div>
             </section>
