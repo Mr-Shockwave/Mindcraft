@@ -80,6 +80,13 @@ h2 {
     color: #617168;
 }
 
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
 .privacy-pill {
     padding: 10px 14px;
     border: 1px solid #b5cbbb;
@@ -87,6 +94,20 @@ h2 {
     background: rgb(255 255 255 / 55%);
     color: #486154;
     font-size: 0.82rem;
+}
+
+.ghost {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #a7bfb0;
+    border-radius: 999px;
+    background: transparent;
+    color: #3f6552;
+    font-weight: 600;
+}
+
+.ghost:hover:not(:disabled) {
+    background: rgb(255 255 255 / 55%);
 }
 
 .workspace {
