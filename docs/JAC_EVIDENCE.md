@@ -38,8 +38,10 @@ Point to each walker and name the stage:
 |---|---|
 | `manifest_emotion` | Externalize → creates 3 pending tray entities |
 | `place_entity` | User places one metaphor on the island |
-| `apply_interaction` | Acknowledge → transform (no combat) |
-| `commit_value_action` | Integrate → values-guided action |
+| `apply_interaction` | Acknowledge → transform (no combat) + `Chose` edge |
+| `suggest_intentions` | Typed `by llm()` next steps via graph traversal |
+| `commit_value_action` | Integrate → `ValueAction` via `LedTo` |
+| `get_act_path` | Traverse island → entity → tools → intention |
 | `reset_demo` | Clean anonymous session |
 
 Say: *“Judges can hit these as `/walker/...` endpoints; the UI just spawns them.”*

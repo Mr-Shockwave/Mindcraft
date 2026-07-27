@@ -71,7 +71,9 @@ Default input: `I feel anxious about presenting my project.`
 - `manifest_emotion(feeling_text)` → includes `pending` (3 choices)
 - `place_entity(entity_id, x, y)`
 - `apply_interaction(entity_id, tool_id)`
-- `commit_value_action(entity_id, action_text)`
+- `suggest_intentions(entity_id)` → noticing line + 3 intention chips
+- `commit_value_action(entity_id, action_text)` → `ValueAction` via `LedTo`
+- `get_act_path(entity_id)` → graph traversal for Jac evidence
 - `reset_demo()`
 
 Entity fields you may display:  

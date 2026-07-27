@@ -3,18 +3,26 @@ import from main {
     TOOLS,
     TRANSFORM_PAIRS,
     Contains,
+    Chose,
+    LedTo,
     EmotionTheme,
     EmotionalEntity,
+    InteractionEvent,
     MindIsland,
+    ValueAction,
     apply_interaction,
     clamp01,
+    fallback_guidance,
     fallback_reading,
     is_crisis_language,
     manifest_emotion,
     place_entity,
     reading_is_valid,
     reset_demo,
+    sanitize_intentions,
     sanitize_tools,
+    suggest_intentions,
+    get_act_path,
     theme_variants,
     value_action_commit
 }
@@ -59,6 +67,24 @@ test "sanitize tools drops invents and keeps allowlisted ids" {
     cleaned = sanitize_tools(["breathe", "chainsaw", "name_it", "breathe"]);
     assert cleaned == ["breathe", "name_it"];
     assert sanitize_tools(["laser"]) == ["breathe", "name_it"];
+}
+
+test "sanitize intentions keeps three short actions" {
+    cleaned = sanitize_intentions([
+        "ok",
+        "Open my notes and begin.",
+        "Speak the first sentence aloud.",
+        "Stand and walk to my spot.",
+        "This intention is intentionally very long so that sanitize can trim it down to ninety characters maximum for the UI chips."
+    ]);
+    assert len(cleaned) == 3;
+    assert cleaned[0] == "Open my notes and begin.";
+}
+
+test "fallback guidance is theme aware" {
+    guidance = fallback_guidance("overwhelm", "water");
+    assert len(guidance.intentions) == 3;
+    assert len(guidance.noticing_line) >= 8;
 }
 
 test "theme variants only return transformable assets" {
@@ -132,6 +158,12 @@ test "place interaction and commit follow ACT stages" {
     assert acknowledged.reports[0]["ok"];
     assert acknowledged.reports[0]["entity"]["is_transformed"] == True;
     assert acknowledged.reports[0]["entity"]["process_stage"] == "acknowledged";
+    assert acknowledged.reports[0]["process_supported"] == "present-moment awareness";
+
+    guided = root spawn suggest_intentions(entity_id=entity_id);
+    assert guided.reports[0]["ok"];
+    assert len(guided.reports[0]["suggestions"]) == 3;
+    assert len(str(guided.reports[0]["noticing_line"])) >= 8;
 
     integrated = value_action_commit(
         entity_id=entity_id,
@@ -141,6 +173,21 @@ test "place interaction and commit follow ACT stages" {
     world = integrated["world"];
     target = [e for e in world if e["id"] == entity_id][0];
     assert target["process_stage"] == "integrated";
+
+    path = root spawn get_act_path(entity_id=entity_id);
+    assert path.reports[0]["ok"];
+    assert "breathe" in path.reports[0]["path"]["tools_used"];
+    assert "Say the first prepared sentence." in path.reports[0]["path"]["intentions"];
+
+    islands = [root-->][?:MindIsland];
+    assert len(islands) == 1;
+    entities = [islands[0]-->][?:EmotionalEntity];
+    assert len(entities) == 1;
+    events = [entities[0] ->:Chose:->][?:InteractionEvent];
+    actions = [entities[0] ->:LedTo:->][?:ValueAction];
+    assert len(events) >= 1;
+    assert len(actions) == 1;
+    assert actions[0].action_text == "Say the first prepared sentence.";
 }
 
 test "crisis path does not create an entity" {
