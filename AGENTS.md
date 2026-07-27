@@ -16,3 +16,4 @@
 - Treat `docs/PSYCHOLOGICAL_FOUNDATION.md` as a product constraint.
 - Treat `docs/TWO_PERSON_WORKFLOW.md`, `docs/MERGE_RULES.md`, and `person_a_codex_brief.md` as collaboration rules.
 - Judge Jac evidence lives in `docs/JAC_EVIDENCE.md` (IDE walkthrough), not a required main-UI panel.
+- Person B publishes the public sandbox via `docs/JACHAMMER_DEPLOY.md` (JacHammer sign-in required).

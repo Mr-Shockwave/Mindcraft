@@ -425,6 +425,34 @@ button:disabled {
     color: #945051;
 }
 
+.tool-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    justify-self: center;
+    max-width: min(720px, 100%);
+}
+
+.tool-chip {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid rgb(255 255 255 / 55%);
+    border-radius: 999px;
+    background: rgb(255 250 245 / 70%);
+    color: #31586a;
+    font-size: 0.84rem;
+    font-weight: 800;
+    box-shadow: 0 8px 22px rgb(70 104 160 / 12%);
+    backdrop-filter: blur(14px);
+}
+
+.tool-chip.selected {
+    border-color: rgb(66 107 170 / 55%);
+    background: #426baa;
+    color: #fffaf8;
+}
+
 .chat-box {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

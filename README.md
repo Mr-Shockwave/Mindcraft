@@ -47,7 +47,7 @@ Do not commit the API key. The configured model is `openai/gpt-4.1-mini`; change
 
 ```powershell
 jac check main.jac
-jac test main.jac -v
+jac test -d tests -v
 ```
 
 Manual checks:
@@ -56,16 +56,17 @@ Manual checks:
 - crisis language displays urgent human-support guidance and is not persisted;
 - every AI-selected asset belongs to the allowlist;
 - the flow still completes without the OpenAI key;
-- the deployed JacHammer sandbox link works in a private browser window.
+- the deployed JacHammer sandbox link works in a private browser window (see `docs/JACHAMMER_DEPLOY.md`).
 
 ## Project layout (two-person merge safety)
 
-- `main.jac` — Person B: graph, walkers, `by llm()`, validation
-- `components/App.cl.jac` — Person A: full UI (may be rewritten substantially)
+- `main.jac` — Person B: graph, walkers, `by llm()`, validation + thin `cl` import
+- `components/App.cl.jac` — Person A: live dream UI (may be redesigned substantially)
 - `styles.css` / `assets/**` — Person A
 - `tests/**` — Person B
-- `docs/MERGE_RULES.md` — how to work in parallel without unmergable conflicts
-- `docs/JAC_EVIDENCE.md` — where Jac runs (show judges in the IDE)
+- `docs/JACHAMMER_DEPLOY.md` — Person B publishes the public sandbox link
+- `docs/MERGE_RULES.md` — parallel frontend without merge hell
+- `docs/JAC_EVIDENCE.md` — where Jac runs (IDE walkthrough for judges)
 - `docs/DEMO_SCRIPT.md` — four-minute live demo
 
 ## Important documents
@@ -73,7 +74,11 @@ Manual checks:
 - `context.md`: original product context.
 - `docs/PSYCHOLOGICAL_FOUNDATION.md`: psychological logic, safety limits, and language rules.
 - `docs/TWO_PERSON_WORKFLOW.md`: collaboration and demo runbook.
-- `person_a_codex_brief.md`: Codex brief for Person A.
+- `docs/MERGE_RULES.md`: parallel frontend without merge hell.
+- `docs/JACHAMMER_DEPLOY.md`: Person B checklist to publish the sandbox link.
+- `docs/JAC_EVIDENCE.md`: where Jac runs (show judges in the IDE).
+- `docs/DEMO_SCRIPT.md`: four-minute live demo.
+- `person_a_codex_brief.md` / `docs/PERSON_A_CODEX_BRIEF.md`: Codex brief for Person A.
 - `assets/assets_library.json`: strict visual and interaction allowlist.
 
 ## Scope

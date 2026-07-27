@@ -10,8 +10,8 @@ This is possible. You do **not** need to serialize to one builder — as long as
 
 | Owner | Files | May do |
 |---|---|---|
-| **Person A** | `components/**`, `styles.css`, `assets/**` (keep IDs), screenshots, Devpost, JacHammer QA | Rewrite layout, IslandSvg, copy, motion, art |
-| **Person B** | `main.jac` (server + thin `cl` import only), `tests/**`, `jac.toml`, `docs/JAC_EVIDENCE.md`, safety/AI helpers | Walkers, graph, `by llm()`, validation, tests |
+| **Person A** | `components/**`, `styles.css`, `assets/**` (keep IDs), screenshots, Devpost, JacHammer visual QA | Rewrite layout, IslandSvg/dream art, copy, motion |
+| **Person B** | `main.jac` (server + thin `cl` import only), `tests/**`, `jac.toml`, `docs/JAC_EVIDENCE.md`, `docs/JACHAMMER_DEPLOY.md`, safety/AI helpers | Walkers, graph, `by llm()`, validation, tests, public deploy |
 | **Shared by agreement** | `docs/PSYCHOLOGICAL_FOUNDATION.md`, `person_a_codex_brief.md`, `docs/TWO_PERSON_WORKFLOW.md` | Product constraints |
 
 ## Critical architecture fact
