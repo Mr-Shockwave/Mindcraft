@@ -114,9 +114,70 @@ def is_crisis_language(text: str) -> bool {
     lowered = text.lower();
     crisis_phrases = [
         "kill myself", "end my life", "want to die", "suicide",
-        "hurt myself", "self harm", "can't go on"
+        "hurt myself", "self harm", "self-harm", "can't go on",
+        "cannot go on", "ending it all", "no reason to live"
     ];
     return any([phrase in lowered for phrase in crisis_phrases]);
+}
+
+def clamp01(value: float) -> float {
+    if value < 0.08 {
+        return 0.08;
+    }
+    if value > 0.92 {
+        return 0.92;
+    }
+    return value;
+}
+
+def sanitize_tools(tool_ids: list[str]) -> list[str] {
+    clean: list[str] = [];
+    for tool_id in tool_ids {
+        if tool_id in TOOLS and tool_id not in clean {
+            clean.append(tool_id);
+        }
+    }
+    if not clean {
+        return ["breathe", "name_it"];
+    }
+    return clean;
+}
+
+def theme_variants(theme_key: str) -> list[str] {
+    defaults: list[str] = ["dark_cloud", "tangled_knot", "fog_patch"];
+    raw: list[str] = defaults;
+    if theme_key == "anxiety" {
+        raw = ["dark_cloud", "tangled_knot", "fog_patch"];
+    } elif theme_key == "overwhelm" {
+        raw = ["tangled_knot", "heavy_stone", "fog_patch"];
+    } elif theme_key == "sadness" {
+        raw = ["heavy_stone", "dark_cloud", "windy_leaves"];
+    } elif theme_key == "frustration" {
+        raw = ["windy_leaves", "tangled_knot", "dark_cloud"];
+    } elif theme_key == "uncertainty" {
+        raw = ["fog_patch", "windy_leaves", "dark_cloud"];
+    }
+
+    variants: list[str] = [];
+    for asset_id in raw {
+        if asset_id in TRANSFORM_PAIRS and asset_id not in variants {
+            variants.append(asset_id);
+        }
+    }
+    if not variants {
+        return defaults;
+    }
+    return variants;
+}
+
+def reading_is_valid(reading: EmotionReading) -> bool {
+    if reading.asset_id not in TRANSFORM_PAIRS {
+        return False;
+    }
+    if reading.transformed_asset_id != TRANSFORM_PAIRS[reading.asset_id] {
+        return False;
+    }
+    return True;
 }
 
 def fallback_reading(feeling_text: str) -> EmotionReading {
@@ -158,13 +219,13 @@ def safe_reading(feeling_text: str) -> EmotionReading {
     reading = fallback_reading(feeling_text);
     try {
         candidate = interpret_emotion(feeling_text);
-        if candidate.asset_id in ALLOWED_ASSETS and
-           candidate.transformed_asset_id == TRANSFORM_PAIRS[candidate.asset_id] {
+        if reading_is_valid(candidate) {
             reading = candidate;
         }
     } except Exception {
         reading = fallback_reading(feeling_text);
     }
+    reading.suggested_tools = sanitize_tools(reading.suggested_tools);
     return reading;
 }
 
@@ -233,21 +294,21 @@ walker:pub manifest_emotion {
 
         reading = safe_reading(clean_text);
         theme_key = str(reading.theme).split(".")[-1].lower();
-
-        variants = THEME_ASSETS.get(theme_key, ["dark_cloud", "tangled_knot", "fog_patch"]) as list[str];
+        variants = theme_variants(theme_key);
 
         new_entities: list = [];
         for asset_id in variants {
-            transformed = TRANSFORM_PAIRS.get(asset_id, "rain_garden") as str;
             entity = EmotionalEntity(
                 gentle_label=reading.gentle_label,
                 theme=theme_key,
                 metaphor=reading.metaphor,
                 asset_id=asset_id,
-                transformed_asset_id=transformed,
+                transformed_asset_id=TRANSFORM_PAIRS[asset_id],
                 reflection=reading.reflection,
                 created_at=datetime.now().isoformat(),
-                placed=False
+                placed=False,
+                x=0.5,
+                y=0.5
             );
             island +>: Contains() :+> entity;
             new_entities.append(entity_view(entity));
@@ -272,8 +333,8 @@ walker:pub place_entity {
             for entity in [island-->][?:EmotionalEntity] {
                 if jid(entity) == self.entity_id {
                     entity.placed = True;
-                    entity.x = self.x;
-                    entity.y = self.y;
+                    entity.x = clamp01(self.x);
+                    entity.y = clamp01(self.y);
                     report {
                         "ok": True,
                         "message": "Your island made room for this feeling.",
@@ -300,6 +361,13 @@ walker:pub apply_interaction {
         for island in [-->][?:MindIsland] {
             for entity in [island-->][?:EmotionalEntity] {
                 if jid(entity) == self.entity_id {
+                    if not entity.placed {
+                        report {
+                            "ok": False,
+                            "error": "Drag this feeling onto your island before choosing an interaction."
+                        };
+                        return;
+                    }
                     event = InteractionEvent(
                         tool_id=self.tool_id,
                         process_supported=str(TOOLS[self.tool_id]["process"]),
@@ -336,6 +404,13 @@ walker:pub commit_value_action {
         for island in [-->][?:MindIsland] {
             for entity in [island-->][?:EmotionalEntity] {
                 if jid(entity) == self.entity_id {
+                    if not entity.is_transformed {
+                        report {
+                            "ok": False,
+                            "error": "Choose how you want to meet this feeling before planting an intention."
+                        };
+                        return;
+                    }
                     action = ValueAction(
                         action_text=clean_action,
                         created_at=datetime.now().isoformat()
@@ -543,6 +618,24 @@ cl {
             busy = False;
         }
 
+        async def reset_island() -> None {
+            if busy {
+                return;
+            }
+            busy = True;
+            error = "";
+            notice = "";
+            result = root spawn reset_demo();
+            if result.reports and result.reports[0]["ok"] {
+                entities = [];
+                selected_entity = "";
+                notice = "Island cleared. Ready for a fresh check-in.";
+            } else {
+                error = "Could not reset the island.";
+            }
+            busy = False;
+        }
+
         placed_entities = [e for e in entities if e["placed"]];
         tray_entities = [e for e in entities if not e["placed"]];
 
@@ -555,7 +648,12 @@ cl {
                         Notice what is here. Give it shape. Carry it with you.
                     </p>
                 </div>
-                <div className="privacy-pill">Anonymous session · not therapy</div>
+                <div className="hero-actions">
+                    <div className="privacy-pill">Anonymous session · not therapy</div>
+                    <button className="ghost" onClick={lambda -> None { reset_island(); }} disabled={busy}>
+                        Reset demo
+                    </button>
+                </div>
             </header>
 
             <section className="workspace">

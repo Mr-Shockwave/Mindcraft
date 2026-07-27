@@ -16,57 +16,68 @@ Anything outside this path is optional.
 
 ## Roles
 
-### Person A — Product, visual frontend, and demo lead
+### Person A — Product, demo, and JacHammer lead
 
 Person A owns:
 
-- visual direction and responsive layout;
-- `styles.css`;
-- approved icons and assets under `assets/`;
-- UX copy that follows the psychological language guide;
-- browser testing on desktop and mobile widths;
+- visual polish proposals and approved icons under `assets/` when needed;
+- UX copy review against the psychological language guide;
+- browser testing on presentation and mobile widths;
 - Devpost description, screenshots, and demo video;
 - the four-minute live-demo script;
 - keeping the task board and calling scope cuts;
 - JacHammer deployment and public-link verification.
 
-Lovable may be used to explore layout, color, CSS, and interaction ideas. Do not allow it to create a second backend or make React/TypeScript the main product. Port useful visual output into Jac client JSX and `styles.css`. Keeping production logic and UI in Jac strengthens the 40% requirement and the 40-point Jac criterion.
+Lovable may be used for visual exploration only. Production frontend, backend, AI, and graph logic stay in Jac.
 
-Person A should avoid changing server nodes, walkers, AI contracts, or graph operations without coordinating with Person B.
-
-### Person B — Jac architecture, logic, safety, and test lead
+### Person B — Jac architecture, frontend wiring, safety, and test lead
 
 Person B owns:
 
-- `main.jac` server-side nodes, edges, walkers, and helper functions;
+- `main.jac` server nodes, edges, walkers, helpers, and Jac client JSX;
+- `styles.css` integration needed for the golden path;
 - typed `by llm()` behavior and OpenAI configuration;
-- strict asset and tool validation;
+- Codex frontend adaptations via backend contracts when they strengthen the demo;
+- strict asset, tool, and coordinate validation;
 - deterministic fallback behavior;
 - crisis-language interception;
 - Jac compiler, formatter, and test results;
 - graph traversal evidence for the judges;
 - integration fixes and final technical sign-off.
 
-Person B should avoid unplanned visual redesigns. UI changes needed for API integration should be communicated as a small interface contract.
-
 ## File ownership
 
 To minimize conflicts:
 
-- Person A has primary write ownership of `styles.css`, `assets/**`, `docs/DEMO_SCRIPT.md`, screenshots, and Devpost text.
-- Person B has primary write ownership of `jac.toml`, the server portion of `main.jac`, tests, and safety logic.
-- The client `cl { ... }` section of `main.jac` is a shared boundary. Person A proposes UI changes there; Person B reviews that walker calls and response shapes remain valid.
+- Person A has primary write ownership of `docs/DEMO_SCRIPT.md`, screenshots, Devpost text, and final deployment notes.
+- Person B has primary write ownership of `jac.toml`, `main.jac`, `styles.css`, `tests/`, and safety logic.
 - `docs/PSYCHOLOGICAL_FOUNDATION.md` is changed only by agreement because it defines product constraints.
+- Person B announces any walker/response-shape changes before Person A records a demo.
 
-After the first stable run, split the client block into a `.cl.jac` module only if the installed Jac version compiles that refactor immediately. Do not risk a working demo merely to improve organization.
+## Interface contract between frontend and backend
+
+Person B / Jac UI can rely on these walkers:
+
+- `get_world()` returns `entities` and `tools`;
+- `manifest_emotion(feeling_text)` returns `pending` tray entities, suggested tools, and world;
+- `place_entity(entity_id, x, y)` places one tray entity onto the island;
+- `apply_interaction(entity_id, tool_id)` requires a placed entity and returns the transformed entity and world;
+- `commit_value_action(entity_id, action_text)` requires a transformed entity and returns the updated world;
+- `reset_demo()` clears the anonymous session graph.
+
+Every mutation returns:
+
+- `ok: bool`;
+- `error: str` when unsuccessful;
+- `world: list` when successful for non-reset mutations.
+
+Entity views include `placed`, `x`, and `y` so the island canvas can render Codex placement without inventing coordinates client-side.
 
 ## Git setup on two devices
 
-One person should create the initial baseline commit after Jac runs. Then both devices:
-
 ```powershell
 git pull
-git switch -c person-a-ui-demo
+git switch -c person-a-demo
 ```
 
 Person B uses:
@@ -76,17 +87,7 @@ git pull
 git switch -c person-b-jac-core
 ```
 
-Use short commits that contain one coherent change:
-
-```text
-style: refine island layout
-docs: add four-minute demo script
-feat: validate emotion asset pairs
-test: cover fallback and crisis guard
-fix: preserve demo flow when LLM fails
-```
-
-Do not use a shared branch simultaneously from two devices. Do not force-push. Do not commit `.env`, API keys, `.jac/`, generated client bundles, recordings, or large raw design exports.
+Use short commits that contain one coherent change. Do not use a shared branch simultaneously from two devices. Do not force-push. Do not commit `.env`, API keys, `.jac/`, `.jaccoder/` screenshots dumps, generated client bundles, or raw journal content.
 
 ## Integration rhythm
 
@@ -100,24 +101,7 @@ Use a 25–30 minute cycle:
 6. Integrate one branch at a time.
 7. Run the complete golden path after every merge.
 
-Person B should act as technical integrator because they own compiler and test verification. Person A decides whether a build is visually and narratively demo-ready.
-
-## Interface contract between frontend and backend
-
-Person A can rely on four walkers:
-
-- `get_world()` returns `entities` and `tools`;
-- `manifest_emotion(feeling_text)` returns the entity, suggested tools, and world;
-- `apply_interaction(entity_id, tool_id)` returns the transformed entity and world;
-- `commit_value_action(entity_id, action_text)` returns the updated world.
-
-Every mutation returns:
-
-- `ok: bool`;
-- `error: str` when unsuccessful;
-- `world: list` when successful.
-
-Person B must announce changes to these keys before merging. Person A should not bind the UI to internal node fields that are absent from `entity_view()`.
+Person B acts as technical integrator. Person A decides whether the build is demo-ready.
 
 ## Device-specific setup
 
@@ -141,7 +125,7 @@ Run verification with:
 
 ```powershell
 jac check main.jac
-jac test main.jac -v
+jac test -d tests -v
 ```
 
 If the Windows native installer is unavailable, use JacHammer for build and deployment or use the official Jac Docker image. Do not spend the final build hour debugging unrelated machine setup.
