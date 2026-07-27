@@ -117,7 +117,7 @@ def is_crisis_language(text: str) -> bool {
         "hurt myself", "self harm", "self-harm", "can't go on",
         "cannot go on", "ending it all", "no reason to live"
     ];
-    return any([phrase in lowered for phrase in crisis_phrases]);
+    return any([phrase in lowered for phrase in crisis_phrases]) as bool;
 }
 
 def clamp01(value: float) -> float {
@@ -303,7 +303,7 @@ walker:pub manifest_emotion {
                 theme=theme_key,
                 metaphor=reading.metaphor,
                 asset_id=asset_id,
-                transformed_asset_id=TRANSFORM_PAIRS[asset_id],
+                transformed_asset_id=TRANSFORM_PAIRS[asset_id] as str,
                 reflection=reading.reflection,
                 created_at=datetime.now().isoformat(),
                 placed=False,
@@ -503,8 +503,8 @@ cl {
     def:pub app() -> JsxElement {
         has feeling_text: str = "I feel anxious about presenting my project.";
         has entities: list = [];
-        has selected_entity: any = "";
-        has selected_tool: any = "breathe";
+        has selected_entity: str = "";
+        has selected_tool: str = "breathe";
         has action_text: str = "Open my notes and say the first sentence.";
         has notice: str = "";
         has error: str = "";
@@ -513,14 +513,18 @@ cl {
         has dragging_id: str = "";
 
         async can with entry {
-            result = root spawn get_world();
-            if result.reports and len(result.reports) > 0 {
-                initial_entities = result.reports[0]["entities"];
-                entities = initial_entities;
-                placed = [e for e in initial_entities if e["placed"]];
-                if len(placed) > 0 {
-                    selected_entity = placed[len(placed) - 1]["id"];
+            try {
+                result = root spawn get_world();
+                if result.reports and len(result.reports) > 0 {
+                    initial_entities = result.reports[0]["entities"] as list;
+                    entities = initial_entities;
+                    placed = [e for e in initial_entities if e["placed"]];
+                    if len(placed) > 0 {
+                        selected_entity = str(placed[len(placed) - 1]["id"]);
+                    }
                 }
+            } except Exception {
+                error = "The island is waking up. Refresh if it does not appear in a moment.";
             }
             loading = False;
         }
@@ -536,13 +540,14 @@ cl {
                 result = root spawn manifest_emotion(feeling_text=feeling_text.strip());
                 response = result.reports[0];
                 if response["ok"] {
-                    entities = response["world"];
-                    if len(response["suggested_tools"]) > 0 {
-                        selected_tool = response["suggested_tools"][0];
+                    entities = response["world"] as list;
+                    suggested_tools = response["suggested_tools"] as list;
+                    if len(suggested_tools) > 0 {
+                        selected_tool = str(suggested_tools[0]);
                     }
                     notice = "Three forms appeared in the tray. Drag the one that feels right onto your island.";
                 } else {
-                    error = response["error"];
+                    error = str(response["error"]);
                 }
             } except Exception {
                 error = "The island paused for a moment. Please try again.";
@@ -559,8 +564,8 @@ cl {
             doc = document as any; # jac:ignore[W2001]
             canvas = doc.getElementById("island-canvas");
             rect = canvas.getBoundingClientRect();
-            raw_x = ((e.clientX - rect.left) as float) / (rect.width as float);
-            raw_y = ((e.clientY - rect.top) as float) / (rect.height as float);
+            raw_x = ((e.clientX as float) - (rect.left as float)) / (rect.width as float);
+            raw_y = ((e.clientY as float) - (rect.top as float)) / (rect.height as float);
             px = (0.08 if raw_x < 0.08 else (0.92 if raw_x > 0.92 else raw_x)) as float;
             py = (0.08 if raw_y < 0.08 else (0.92 if raw_y > 0.92 else raw_y)) as float;
             dragging_id = "";
@@ -569,11 +574,11 @@ cl {
             result = root spawn place_entity(entity_id=eid, x=px, y=py);
             response = result.reports[0];
             if response["ok"] {
-                entities = response["world"];
-                selected_entity = response["entity"]["id"];
-                notice = response["message"];
+                entities = response["world"] as list;
+                selected_entity = str(response["entity"]["id"]);
+                notice = str(response["message"]);
             } else {
-                error = response["error"];
+                error = str(response["error"]);
             }
             busy = False;
         }
@@ -590,10 +595,10 @@ cl {
             );
             response = result.reports[0];
             if response["ok"] {
-                entities = response["world"];
-                notice = response["message"];
+                entities = response["world"] as list;
+                notice = str(response["message"]);
             } else {
-                error = response["error"];
+                error = str(response["error"]);
             }
             busy = False;
         }
@@ -610,10 +615,10 @@ cl {
             );
             response = result.reports[0];
             if response["ok"] {
-                entities = response["world"];
-                notice = response["message"];
+                entities = response["world"] as list;
+                notice = str(response["message"]);
             } else {
-                error = response["error"];
+                error = str(response["error"]);
             }
             busy = False;
         }
@@ -662,7 +667,7 @@ cl {
                     <h2>What is showing up?</h2>
                     <textarea
                         value={feeling_text}
-                        onChange={lambda (e: ChangeEvent) { feeling_text = e.target.value; }}
+                        onChange={lambda (e: any) { feeling_text = str(e.target.value); }}
                         maxLength={280}
                         aria-label="Describe what you are feeling"
                     />
@@ -725,7 +730,7 @@ cl {
                                 key={entity["id"]}
                                 className={"placed-entity " + ("active" if selected_entity == entity["id"] else "")}
                                 style={{"left": str((entity["x"] as float) * 100.0) + "%", "top": str((entity["y"] as float) * 100.0) + "%"}}
-                                onClick={lambda -> None { selected_entity = entity["id"]; }}
+                                onClick={lambda -> None { selected_entity = str(entity["id"]); }}
                                 aria-label={entity["label"]}
                             >
                                 <span className="entity-symbol">{entity["symbol"]}</span>
@@ -748,7 +753,7 @@ cl {
                                         key={entity["id"]}
                                         className={"tray-entity" + (" dragging" if dragging_id == entity["id"] else "")}
                                         draggable={True}
-                                        onDragStart={lambda (e: any) { dragging_id = entity["id"] as str; }}
+                                        onDragStart={lambda (e: any) { dragging_id = str(entity["id"]); }}
                                         onDragEnd={lambda (e: any) { dragging_id = ""; }}
                                         aria-label={entity["label"]}
                                     >
@@ -771,7 +776,7 @@ cl {
                     </p>
                     <input
                         value={action_text}
-                        onChange={lambda (e: ChangeEvent) { action_text = e.target.value; }}
+                        onChange={lambda (e: any) { action_text = str(e.target.value); }}
                         aria-label="One small next action"
                     />
                     <button className="primary" onClick={lambda -> None { commit_action(); }} disabled={not selected_entity or busy}>

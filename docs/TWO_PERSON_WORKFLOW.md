@@ -54,6 +54,17 @@ To minimize conflicts:
 - `docs/PSYCHOLOGICAL_FOUNDATION.md` is changed only by agreement because it defines product constraints.
 - Person B announces any walker/response-shape changes before Person A records a demo.
 
+### Hard merge rules
+
+- Person A branches from the latest `main` and keeps `main.jac`, `styles.css`, `tests/`, and `jac.toml` unchanged unless Person B explicitly asks for a paired frontend integration edit.
+- Person A may propose visual changes in mockups, screenshots, or notes first; Person B ports approved changes into Jac client/CSS when the golden path is stable.
+- Person A may change visual symbols in `assets/assets_library.json` only when every `id`, `themes`, and `transforms_to` value stays unchanged.
+- Person A must not remove, rename, or bypass the golden-path buttons: `Place it on my island`, `Try this interaction`, `Plant this intention`, and `Reset demo`.
+- Person A must not change walker names, walker arguments, response keys, ACT stages, asset IDs, tool IDs, coordinate handling, crisis guards, fallback behavior, or tests.
+- If both people need an app-surface change, Person B edits `main.jac` and `styles.css` first on `person-b-jac-core`; Person A rebases afterward and validates the browser flow.
+- Before opening a Person A PR, run `git fetch origin main` and `git diff origin/main -- main.jac styles.css tests jac.toml`. The expected result is empty unless the PR description names the Person B-approved exception.
+- Integration order is Person A demo/docs assets first, Person B Jac-core changes second, then one complete golden-path browser run.
+
 ## Interface contract between frontend and backend
 
 Person B / Jac UI can rely on these walkers:
