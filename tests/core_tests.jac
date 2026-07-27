@@ -3,6 +3,7 @@ import from main {
     TOOLS,
     TRANSFORM_PAIRS,
     Contains,
+    EmotionTheme,
     EmotionalEntity,
     MindIsland,
     apply_interaction,
@@ -37,6 +38,16 @@ test "sad fallback uses a nonviolent nature metaphor" {
     reading = fallback_reading("I feel sad and heavy");
     assert reading.asset_id == "heavy_stone";
     assert reading.transformed_asset_id == "mossy_stone";
+}
+
+test "overwhelm and uncertainty fallbacks diversify themes" {
+    overwhelm = fallback_reading("I feel overwhelmed and everything is too much");
+    assert overwhelm.theme == EmotionTheme.OVERWHELM;
+    assert overwhelm.asset_id == "tangled_knot";
+
+    unsure = fallback_reading("I feel unsure and confused about what to say");
+    assert unsure.theme == EmotionTheme.UNCERTAINTY;
+    assert unsure.asset_id == "fog_patch";
 }
 
 test "tools support ACT processes rather than mood scores" {
@@ -113,6 +124,9 @@ test "place interaction and commit follow ACT stages" {
     assert placed.reports[0]["entity"]["x"] == 0.92;
     assert placed.reports[0]["entity"]["y"] == 0.08;
     assert placed.reports[0]["entity"]["process_stage"] == "externalized";
+    world_after_place = placed.reports[0]["world"];
+    assert len([e for e in world_after_place if not e["placed"]]) == 0;
+    assert len([e for e in world_after_place if e["placed"]]) == 1;
 
     acknowledged = root spawn apply_interaction(entity_id=entity_id, tool_id="breathe");
     assert acknowledged.reports[0]["ok"];

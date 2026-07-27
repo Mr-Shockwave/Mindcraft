@@ -35,13 +35,13 @@ Install the current Jac binary, then:
 ```powershell
 jac install
 jac install byllm
-$env:OPENAI_API_KEY = "your-key"
+# Prefer exporting the key into the shell so byllm can reach OpenAI
+# (Jac may not always auto-load .env depending on how you start it)
+$env:OPENAI_API_KEY = (Get-Content .env | Where-Object { $_ -match '^OPENAI_API_KEY=' }) -replace '^OPENAI_API_KEY=',''
 jac start --dev
 ```
 
-Open the client URL printed by Jac, normally `http://localhost:8000/cl/app`.
-
-Do not commit the API key. The configured model is `openai/gpt-4.1-mini`; change it in `jac.toml` if the event-provided OpenAI account uses a different LiteLLM model identifier.
+After Send, the toast shows `theme · AI reading` when the model is used, or `theme · local metaphor map` when the deterministic fallback ran.
 
 ## Verify
 

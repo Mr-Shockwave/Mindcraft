@@ -154,6 +154,7 @@ button:disabled {
         radial-gradient(ellipse at 50% 62%, rgb(255 250 244 / 95%) 0 32%, rgb(255 223 220 / 76%) 48%, rgb(177 167 245 / 34%) 66%, transparent 76%);
     filter: blur(1px);
     opacity: 0.98;
+    pointer-events: none;
 }
 
 .cotton-cloud {
@@ -161,6 +162,7 @@ button:disabled {
     z-index: 2;
     filter: blur(0.4px);
     opacity: 0.9;
+    pointer-events: none;
 }
 
 .cotton-cloud::before,
@@ -222,6 +224,7 @@ button:disabled {
     bottom: -13vh;
     z-index: 2;
     height: 43vh;
+    pointer-events: none;
 }
 
 .cloud-field span {
@@ -273,7 +276,7 @@ button:disabled {
 
 .placed-entity {
     position: absolute;
-    z-index: 5;
+    z-index: 8;
     transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
@@ -286,9 +289,10 @@ button:disabled {
     color: #264a56;
     cursor: grab;
     touch-action: none;
-    transition: transform 90ms ease, filter 90ms ease, opacity 90ms ease;
-    will-change: transform, left, top;
-    -webkit-user-drag: element;
+    user-select: none;
+    transition: filter 90ms ease, opacity 90ms ease;
+    will-change: left, top;
+    -webkit-user-drag: none;
 }
 
 .placed-entity:hover,
@@ -298,7 +302,20 @@ button:disabled {
 
 .placed-entity.dragging {
     cursor: grabbing;
-    opacity: 0.28;
+    opacity: 0.72;
+    z-index: 9;
+}
+
+.entity-caption {
+    margin-top: 2px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(255 250 252 / 72%);
+    color: #31586a;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: lowercase;
+    pointer-events: none;
 }
 
 .art-object {
@@ -519,8 +536,8 @@ button:disabled {
 
 .object-editor {
     justify-self: center;
-    display: grid;
-    grid-template-columns: auto minmax(160px, 230px) minmax(160px, 230px);
+    display: flex;
+    justify-content: center;
     gap: 10px;
     align-items: center;
     max-width: 100%;
@@ -529,6 +546,21 @@ button:disabled {
     background: rgb(255 250 252 / 56%);
     box-shadow: 0 16px 42px rgb(64 99 152 / 14%);
     backdrop-filter: blur(20px);
+}
+
+.interact-panel {
+    justify-self: center;
+    display: grid;
+    gap: 8px;
+    width: min(720px, 100%);
+}
+
+.interact-label {
+    margin: 0;
+    color: #31586a;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-align: center;
 }
 
 .implant-button {
@@ -603,7 +635,12 @@ button:disabled {
 }
 
 .tray-name {
-    display: none;
+    display: block;
+    margin-top: 2px;
+    color: #31586a;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: lowercase;
 }
 
 .toast {
