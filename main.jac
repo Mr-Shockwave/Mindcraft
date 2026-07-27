@@ -34,6 +34,10 @@ or claim therapy. Choose asset_id from dark_cloud, tangled_knot, heavy_stone, wi
 or fog_patch. Choose transformed_asset_id from rain_garden, open_ribbon, mossy_stone,
 gentle_breeze, or lantern_path. Tool IDs may only be breathe, sunlight, water, or name_it.
 Treat transformation as making room for an emotion, not eliminating or curing it.
+Write reflection as one concrete, warm sentence that mirrors the user's wording and names
+what is hard without promising calm or a cure. Prefer suggested_tools that fit the moment:
+breathe for racing thoughts, name_it for sticky self-stories, water for overwhelm,
+sunlight for harsh self-criticism.
 """;
 
 
@@ -312,6 +316,8 @@ walker:pub manifest_emotion {
             "ok": True,
             "pending": new_entities,
             "suggested_tools": reading.suggested_tools,
+            "reflection": reading.reflection,
+            "gentle_label": reading.gentle_label,
             "world": island_entities(island)
         };
     }
@@ -411,6 +417,15 @@ def value_action_commit(entity_id: str, action_text: str) -> dict {
     return {"ok": False, "error": "That feeling could not be found."};
 }
 
+walker:pub commit_value_action {
+    has entity_id: str;
+    has action_text: str;
+
+    can commit with Root entry {
+        report value_action_commit(self.entity_id, self.action_text);
+    }
+}
+
 walker:pub reset_demo {
     can reset with Root entry {
         for island in [-->][?:MindIsland] {
@@ -432,6 +447,7 @@ cl {
         has entities: list = [];
         has selected_entity: str = "";
         has selected_tool: str = "breathe";
+        has suggested_tools: list = ["breathe", "name_it"];
         has action_text: str = "Open my notes and say the first sentence.";
         has generation_target: str = "object";
         has world_style: str = "cloud";
@@ -445,6 +461,12 @@ cl {
         has loading: bool = True;
         has busy: bool = False;
         has dragging_id: str = "";
+        has tool_labels: dict = {
+            "breathe": "Three slow breaths",
+            "sunlight": "Offer warmth",
+            "water": "Make some room",
+            "name_it": "Name the story"
+        };
 
         async can with entry {
             try {
@@ -479,7 +501,7 @@ cl {
                     if len(suggested_tools) > 0 {
                         selected_tool = str(suggested_tools[0]);
                     }
-                    notice = "";
+                    notice = str(response["reflection"]) + " Drag one form onto your island.";
                 } else {
                     error = str(response["error"]);
                 }
@@ -555,8 +577,8 @@ cl {
             if response["ok"] {
                 entities = response["world"] as list;
                 selected_entity = str(response["entity"]["id"]);
-                planted_entity = str(response["entity"]["id"]);
-                notice = "";
+                planted_entity = "";
+                notice = "Choose how you want to meet this feeling, then plant it.";
             } else {
                 error = str(response["error"]);
             }
@@ -594,7 +616,9 @@ cl {
             if response["ok"] {
                 entities = response["world"] as list;
                 selected_entity = str(response["entity"]["id"]);
-                planted_entity = str(response["entity"]["id"]);
+                if not (response["entity"]["is_transformed"] as bool) {
+                    planted_entity = "";
+                }
             } else {
                 error = str(response["error"]);
             }
@@ -614,7 +638,28 @@ cl {
             if response["ok"] {
                 entities = response["world"] as list;
                 planted_entity = selected_entity;
-                notice = "";
+                tool_name = str(tool_labels[selected_tool]);
+                notice = str(response["message"]) + " You chose: " + tool_name + ".";
+            } else {
+                error = str(response["error"]);
+            }
+            busy = False;
+        }
+
+        async def commit_intention() -> None {
+            if not planted_entity or busy {
+                return;
+            }
+            busy = True;
+            error = "";
+            result = root spawn commit_value_action(
+                entity_id=planted_entity,
+                action_text=action_text
+            );
+            response = result.reports[0];
+            if response["ok"] {
+                entities = response["world"] as list;
+                notice = str(response["message"]);
             } else {
                 error = str(response["error"]);
             }
@@ -710,8 +755,8 @@ cl {
                         }}
                         aria-label="Generation target"
                     >
+                        <option value="object">Generate Feeling Form</option>
                         <option value="world">Generate World</option>
-                        <option value="object">Generate Object</option>
                     </select>
                     <select
                         value={world_style}
@@ -754,7 +799,40 @@ cl {
                     </div>
                 }
 
-                {selected_entity and
+                {selected_entity and not (planted_entity == selected_entity) and
+                    <div className="tool-row" role="group" aria-label="Choose how to meet this feeling">
+                        <button
+                            type="button"
+                            className={"tool-chip" + (" selected" if selected_tool == "breathe" else "")}
+                            onClick={lambda -> None { selected_tool = "breathe"; }}
+                        >
+                            Three slow breaths
+                        </button>
+                        <button
+                            type="button"
+                            className={"tool-chip" + (" selected" if selected_tool == "sunlight" else "")}
+                            onClick={lambda -> None { selected_tool = "sunlight"; }}
+                        >
+                            Offer warmth
+                        </button>
+                        <button
+                            type="button"
+                            className={"tool-chip" + (" selected" if selected_tool == "water" else "")}
+                            onClick={lambda -> None { selected_tool = "water"; }}
+                        >
+                            Make some room
+                        </button>
+                        <button
+                            type="button"
+                            className={"tool-chip" + (" selected" if selected_tool == "name_it" else "")}
+                            onClick={lambda -> None { selected_tool = "name_it"; }}
+                        >
+                            Name the story
+                        </button>
+                    </div>
+                }
+
+                {selected_entity and not (planted_entity == selected_entity) and
                     <div className="object-editor">
                         <button className="implant-button" onClick={lambda -> None { plant_selected(); }} disabled={busy}>
                             Plant in World
@@ -784,6 +862,26 @@ cl {
                     </div>
                 }
 
+                {planted_entity and
+                    <div className="value-row">
+                        <input
+                            type="text"
+                            value={action_text}
+                            onChange={lambda (e: any) { action_text = str(e.target.value); }}
+                            maxLength={120}
+                            aria-label="One small next step"
+                            placeholder="One small next step you can take..."
+                        />
+                        <button
+                            className="implant-button"
+                            onClick={lambda -> None { commit_intention(); }}
+                            disabled={busy}
+                        >
+                            Plant intention
+                        </button>
+                    </div>
+                }
+
                 {(notice or error) and
                     <div className={"toast error" if error else "toast notice"} role={"alert" if error else "status"}>
                         {error if error else notice}
@@ -796,10 +894,10 @@ cl {
                         onChange={lambda (e: any) { feeling_text = str(e.target.value); }}
                         maxLength={280}
                         aria-label="Describe what you are feeling"
-                        placeholder={("Define an event: what should the selected object do? Example: create a speech bubble that says \"Hello\"." if selected_entity else ("Describe the world you want to generate..." if generation_target == "world" else "Describe a feeling or thought, and AI will generate object options..."))}
+                        placeholder={("Optional: add a speech bubble for the selected form..." if selected_entity else ("Describe the world mood you want..." if generation_target == "world" else "What's showing up right now? e.g. anxious about presenting..."))}
                     />
                     <button className="send-button" onClick={lambda -> None { send_prompt(); }} disabled={busy}>
-                        {("..." if busy else ("Define Event" if selected_entity else "Send"))}
+                        {("..." if busy else ("Add Bubble" if selected_entity else "Send"))}
                     </button>
                 </div>
             </section>
