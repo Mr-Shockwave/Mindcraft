@@ -63,14 +63,8 @@ node InteractionEvent {
         created_at: str;
 }
 
-node ValueAction {
-    has action_text: str,
-        created_at: str;
-}
-
 edge Contains {}
 edge Chose {}
-edge LedTo {}
 
 
 glob ALLOWED_ASSETS: dict = {
@@ -391,43 +385,30 @@ walker:pub apply_interaction {
     }
 }
 
-walker:pub commit_value_action {
-    has entity_id: str;
-    has action_text: str;
-
-    can commit with Root entry {
-        clean_action = self.action_text.strip();
-        if len(clean_action) < 3 {
-            report {"ok": False, "error": "Choose one small action you can actually take."};
-            return;
-        }
-        for island in [-->][?:MindIsland] {
-            for entity in [island-->][?:EmotionalEntity] {
-                if jid(entity) == self.entity_id {
-                    if not entity.is_transformed {
-                        report {
-                            "ok": False,
-                            "error": "Choose how you want to meet this feeling before planting an intention."
-                        };
-                        return;
-                    }
-                    action = ValueAction(
-                        action_text=clean_action,
-                        created_at=datetime.now().isoformat()
-                    );
-                    entity +>: LedTo() :+> action;
-                    entity.process_stage = "integrated";
-                    report {
-                        "ok": True,
-                        "message": "Your feeling can come with you while you take this step.",
-                        "world": island_entities(island)
+def value_action_commit(entity_id: str, action_text: str) -> dict {
+    clean_action = action_text.strip();
+    if len(clean_action) < 3 {
+        return {"ok": False, "error": "Choose one small action you can actually take."};
+    }
+    for island in [root-->][?:MindIsland] {
+        for entity in [island-->][?:EmotionalEntity] {
+            if jid(entity) == entity_id {
+                if not entity.is_transformed {
+                    return {
+                        "ok": False,
+                        "error": "Choose how you want to meet this feeling before planting an intention."
                     };
-                    return;
                 }
+                entity.process_stage = "integrated";
+                return {
+                    "ok": True,
+                    "message": "Your feeling can come with you while you take this step.",
+                    "world": island_entities(island)
+                };
             }
         }
-        report {"ok": False, "error": "That feeling could not be found."};
     }
+    return {"ok": False, "error": "That feeling could not be found."};
 }
 
 walker:pub reset_demo {
@@ -442,7 +423,386 @@ walker:pub reset_demo {
     }
 }
 
-# Client entry lives in components/App.cl.jac (Person A owns UI).
+# Client entry for the demo lives here so JacHammer can serve one stable app.
 cl {
-    import from "./components/App.cl.jac" { app }
+    import "./styles.css";
+
+    def:pub app() -> JsxElement {
+        has feeling_text: str = "I feel anxious about presenting my project.";
+        has entities: list = [];
+        has selected_entity: str = "";
+        has selected_tool: str = "breathe";
+        has action_text: str = "Open my notes and say the first sentence.";
+        has generation_target: str = "object";
+        has world_style: str = "cloud";
+        has event_text: str = "";
+        has event_entity: str = "";
+        has planted_entity: str = "";
+        has object_scale: float = 1.0;
+        has object_rotation: float = 0.0;
+        has notice: str = "";
+        has error: str = "";
+        has loading: bool = True;
+        has busy: bool = False;
+        has dragging_id: str = "";
+
+        async can with entry {
+            try {
+                result = root spawn get_world();
+                if result.reports and len(result.reports) > 0 {
+                    initial_entities = result.reports[0]["entities"] as list;
+                    entities = initial_entities;
+                    placed = [e for e in initial_entities if e["placed"]];
+                    if len(placed) > 0 {
+                        selected_entity = str(placed[len(placed) - 1]["id"]);
+                    }
+                }
+            } except Exception {
+                error = "The island is waking up. Refresh if it does not appear in a moment.";
+            }
+            loading = False;
+        }
+
+        async def manifest() -> None {
+            if not feeling_text.strip() or busy {
+                return;
+            }
+            busy = True;
+            error = "";
+            notice = "";
+            try {
+                result = root spawn manifest_emotion(feeling_text=feeling_text.strip());
+                response = result.reports[0];
+                if response["ok"] {
+                    entities = response["world"] as list;
+                    suggested_tools = response["suggested_tools"] as list;
+                    if len(suggested_tools) > 0 {
+                        selected_tool = str(suggested_tools[0]);
+                    }
+                    notice = "";
+                } else {
+                    error = str(response["error"]);
+                }
+            } except Exception {
+                error = "The island paused for a moment. Please try again.";
+            }
+            busy = False;
+        }
+
+        def apply_world() -> None {
+            selected_entity = "";
+            event_entity = "";
+            event_text = "";
+        }
+
+        def canvas_point(e: any) -> dict {
+            doc = document as any; # jac:ignore[W2001]
+            canvas = doc.getElementById("dream-stage");
+            rect = canvas.getBoundingClientRect();
+            raw_x = ((e.clientX as float) - (rect.left as float)) / (rect.width as float);
+            raw_y = ((e.clientY as float) - (rect.top as float)) / (rect.height as float);
+            return {
+                "x": (0.04 if raw_x < 0.04 else (0.96 if raw_x > 0.96 else raw_x)) as float,
+                "y": (0.08 if raw_y < 0.08 else (0.86 if raw_y > 0.86 else raw_y)) as float
+            };
+        }
+
+        def locally_place_entity(eid: str, x: float, y: float) -> None {
+            updated: list = [];
+            for item in entities {
+                if str(item["id"]) == eid {
+                    item["x"] = x;
+                    item["y"] = y;
+                    item["placed"] = True;
+                }
+                updated.append(item);
+            }
+            entities = updated;
+        }
+
+        async def send_prompt() -> None {
+            if selected_entity {
+                event_entity = selected_entity;
+                event_text = feeling_text.strip();
+                if not event_text {
+                    event_text = "你好";
+                }
+                feeling_text = "";
+                return;
+            }
+            if generation_target == "world" {
+                apply_world();
+                return;
+            }
+            manifest();
+        }
+
+        async def on_drop(e: any) -> None {
+            e.preventDefault();
+            eid = dragging_id;
+            if not eid {
+                return;
+            }
+            point = canvas_point(e);
+            px = point["x"] as float;
+            py = point["y"] as float;
+            dragging_id = "";
+            locally_place_entity(eid, px, py);
+            busy = True;
+            error = "";
+            result = root spawn place_entity(entity_id=eid, x=px, y=py);
+            response = result.reports[0];
+            if response["ok"] {
+                entities = response["world"] as list;
+                selected_entity = str(response["entity"]["id"]);
+                planted_entity = str(response["entity"]["id"]);
+                notice = "";
+            } else {
+                error = str(response["error"]);
+            }
+            busy = False;
+        }
+
+        def start_free_drag(e: any, eid: str) -> None {
+            selected_entity = eid;
+            dragging_id = eid;
+            point = canvas_point(e);
+            locally_place_entity(eid, point["x"] as float, point["y"] as float);
+            e.currentTarget.setPointerCapture(e.pointerId);
+        }
+
+        def move_free_drag(e: any) -> None {
+            if not dragging_id {
+                return;
+            }
+            point = canvas_point(e);
+            locally_place_entity(dragging_id, point["x"] as float, point["y"] as float);
+        }
+
+        async def end_free_drag(e: any) -> None {
+            eid = dragging_id;
+            if not eid {
+                return;
+            }
+            point = canvas_point(e);
+            px = point["x"] as float;
+            py = point["y"] as float;
+            dragging_id = "";
+            locally_place_entity(eid, px, py);
+            result = root spawn place_entity(entity_id=eid, x=px, y=py);
+            response = result.reports[0];
+            if response["ok"] {
+                entities = response["world"] as list;
+                selected_entity = str(response["entity"]["id"]);
+                planted_entity = str(response["entity"]["id"]);
+            } else {
+                error = str(response["error"]);
+            }
+        }
+
+        async def plant_selected() -> None {
+            if not selected_entity or busy {
+                return;
+            }
+            busy = True;
+            error = "";
+            result = root spawn apply_interaction(
+                entity_id=selected_entity,
+                tool_id=selected_tool
+            );
+            response = result.reports[0];
+            if response["ok"] {
+                entities = response["world"] as list;
+                planted_entity = selected_entity;
+                notice = "";
+            } else {
+                error = str(response["error"]);
+            }
+            busy = False;
+        }
+
+        async def reset_island() -> None {
+            if busy {
+                return;
+            }
+            busy = True;
+            error = "";
+            notice = "";
+            result = root spawn reset_demo();
+            if result.reports and result.reports[0]["ok"] {
+                entities = [];
+                selected_entity = "";
+                planted_entity = "";
+                event_entity = "";
+                event_text = "";
+                notice = "Island cleared. Ready for a fresh check-in.";
+            } else {
+                error = "Could not reset the island.";
+            }
+            busy = False;
+        }
+
+        placed_entities = [e for e in entities if e["placed"]];
+        tray_entities = [e for e in entities if not e["placed"]];
+
+        return <main
+            id="dream-stage"
+            className={"app-shell dream-stage world-" + world_style + (" drag-active" if dragging_id else "")}
+            onDragOver={lambda (e: any) { e.preventDefault(); }}
+            onDrop={lambda (e: any) { on_drop(e); }}
+        >
+            <header className="top-bar">
+                <div className="brand">
+                    <span className="brand-mark">MI</span>
+                    <span>Mind Island</span>
+                </div>
+            </header>
+
+            <section className="sky-world">
+                <div className="sunrise-glow"></div>
+                <div className="world-layer"></div>
+                <div className="cotton-cloud cloud-left"></div>
+                <div className="cotton-cloud cloud-right"></div>
+                <div className="cotton-cloud cloud-low"></div>
+                <div className="cloud-field">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                </div>
+
+                {loading and <p className="canvas-hint">Growing your island...</p>}
+                {not loading and len(placed_entities) == 0 and len(tray_entities) == 0 and
+                    <p className="canvas-hint">Your island has room for whatever arrives.</p>
+                }
+                {not loading and len(tray_entities) > 0 and len(placed_entities) == 0 and
+                    <p className="canvas-hint drop-hint">Drag a form anywhere into the sky</p>
+                }
+
+                {[
+                    <div
+                        key={entity["id"]}
+                        className={"placed-entity dream-creature " + ("active" if selected_entity == entity["id"] else "") + (" planted" if planted_entity == entity["id"] else "") + (" dragging" if dragging_id == entity["id"] else "")}
+                        style={{"left": str((entity["x"] as float) * 100.0) + "%", "top": str((entity["y"] as float) * 100.0) + "%", "transform": "translate(-50%, -50%) rotate(" + str(object_rotation) + "deg) scale(" + str(object_scale) + ")"}}
+                        onPointerDown={lambda (e: any) { start_free_drag(e, str(entity["id"])); }}
+                        onPointerMove={lambda (e: any) { move_free_drag(e); }}
+                        onPointerUp={lambda (e: any) { end_free_drag(e); }}
+                        onPointerCancel={lambda (e: any) { dragging_id = ""; }}
+                        onClick={lambda -> None { selected_entity = str(entity["id"]); }}
+                        aria-label={entity["label"]}
+                    >
+                        <span className={"art-object art-" + str(entity["asset_id"])}>
+                            <span></span><span></span><span></span>
+                        </span>
+                        {event_entity == entity["id"] and event_text and
+                            <span className="event-bubble">{event_text}</span>
+                        }
+                    </div>
+                    for entity in placed_entities
+                ]}
+            </section>
+
+            <section className="bottom-dock" aria-label="AI chat composer">
+                <div className="mode-selects">
+                    <select
+                        value={generation_target}
+                        onChange={lambda (e: any) {
+                            generation_target = str(e.target.value);
+                            selected_entity = "";
+                        }}
+                        aria-label="Generation target"
+                    >
+                        <option value="world">生成世界</option>
+                        <option value="object">生成物体</option>
+                    </select>
+                    <select
+                        value={world_style}
+                        onChange={lambda (e: any) {
+                            world_style = str(e.target.value);
+                            generation_target = "world";
+                            selected_entity = "";
+                        }}
+                        aria-label="World style"
+                    >
+                        <option value="cloud">云海世界</option>
+                        <option value="glass">玻璃花园</option>
+                        <option value="night">夜光湖面</option>
+                    </select>
+                </div>
+
+                {len(tray_entities) > 0 and
+                    <div className="entity-tray">
+                        <div className="tray-row">
+                            {[
+                                <div
+                                    key={entity["id"]}
+                                    className={"tray-entity" + (" dragging" if dragging_id == entity["id"] else "")}
+                                    draggable={True}
+                                    onDragStart={lambda (e: any) {
+                                        dragging_id = str(entity["id"]);
+                                        e.dataTransfer.effectAllowed = "move";
+                                    }}
+                                    onDragEnd={lambda (e: any) { dragging_id = ""; }}
+                                    aria-label={entity["label"]}
+                                >
+                                    <span className={"art-object art-" + str(entity["asset_id"])}>
+                                        <span></span><span></span><span></span>
+                                    </span>
+                                    <span className="tray-name">{entity["theme"]}</span>
+                                </div>
+                                for entity in tray_entities
+                            ]}
+                        </div>
+                    </div>
+                }
+
+                {selected_entity and
+                    <div className="object-editor">
+                        <button className="implant-button" onClick={lambda -> None { plant_selected(); }} disabled={busy}>
+                            植入世界
+                        </button>
+                        <label>
+                            <span>大小</span>
+                            <input
+                                type="range"
+                                min="0.55"
+                                max="1.8"
+                                step="0.05"
+                                value={str(object_scale)}
+                                onChange={lambda (e: any) { object_scale = e.target.value as float; }}
+                            />
+                        </label>
+                        <label>
+                            <span>角度</span>
+                            <input
+                                type="range"
+                                min="-180"
+                                max="180"
+                                step="1"
+                                value={str(object_rotation)}
+                                onChange={lambda (e: any) { object_rotation = e.target.value as float; }}
+                            />
+                        </label>
+                    </div>
+                }
+
+                {(notice or error) and
+                    <div className={"toast error" if error else "toast notice"} role={"alert" if error else "status"}>
+                        {error if error else notice}
+                    </div>
+                }
+
+                <div className="chat-box">
+                    <textarea
+                        value={feeling_text}
+                        onChange={lambda (e: any) { feeling_text = str(e.target.value); }}
+                        maxLength={280}
+                        aria-label="Describe what you are feeling"
+                        placeholder={("定义事件：让选中的物体发生什么？例如：产生对话框并说“你好”" if selected_entity else ("描述想生成的世界..." if generation_target == "world" else "描述情绪或想法，AI 生成不同物体选项..."))}
+                    />
+                    <button className="send-button" onClick={lambda -> None { send_prompt(); }} disabled={busy}>
+                        {("..." if busy else ("定义事件" if selected_entity else "Send"))}
+                    </button>
+                </div>
+            </section>
+        </main>;
+    }
 }
