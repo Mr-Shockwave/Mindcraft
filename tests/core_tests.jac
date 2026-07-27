@@ -7,7 +7,6 @@ import from main {
     MindIsland,
     apply_interaction,
     clamp01,
-    commit_value_action,
     fallback_reading,
     is_crisis_language,
     manifest_emotion,
@@ -15,7 +14,8 @@ import from main {
     reading_is_valid,
     reset_demo,
     sanitize_tools,
-    theme_variants
+    theme_variants,
+    value_action_commit
 }
 
 
@@ -119,12 +119,12 @@ test "place interaction and commit follow ACT stages" {
     assert acknowledged.reports[0]["entity"]["is_transformed"] == True;
     assert acknowledged.reports[0]["entity"]["process_stage"] == "acknowledged";
 
-    integrated = root spawn commit_value_action(
+    integrated = value_action_commit(
         entity_id=entity_id,
         action_text="Say the first prepared sentence."
     );
-    assert integrated.reports[0]["ok"];
-    world = integrated.reports[0]["world"];
+    assert integrated["ok"];
+    world = integrated["world"];
     target = [e for e in world if e["id"] == entity_id][0];
     assert target["process_stage"] == "integrated";
 }
